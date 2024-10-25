@@ -1,5 +1,5 @@
 # What is Emacs? 
-If you are familiar with Vim, think of Emacs as Vim, and Doom Emacs as Neovim, and skip to the [next section](#My config).
+If you are familiar with Vim, think of Emacs as Vim, and Doom Emacs as Neovim, and skip to the [next section](#My%20config).
 
 [Emacs](https://www.gnu.org/software/emacs/) is an open source text editor with lots of features and built-in room for further customisation with internal and external plugins: you inherit a complicated and ugly-looking piece of software and over the years you extend it with scripts, change shortcuts and add features until the program becomes aligned with your needs. 
 
