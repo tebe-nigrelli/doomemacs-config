@@ -1,0 +1,2068 @@
+#+title: Configuration
+#+startup: num
+#+property: header-args:emacs-lisp :tangle yes :results none
+
+Literate Configuration file for Doom Emacs.
+
+- ":tangle yes" code blocks are merged and saved to _config.el_ in the same path. ":tangle no" code blocks are ignored
+
+* TODO
+# [2024-01-10 Wed 09:26 +0100]
+- [ ] [2024-10-25 Fri 14:52 +0200] :: sample reminder
+
+* Utility Code
+- [2022-11-14 Mon +0100] :: run old java jars from shell
+- [2023-01-31 Tue +0100] :: nevermind it doesn't work due to something on MACOS side (hasn't been for months)
+- [2024-01-18 Thu +0100] :: remember to set =:tangle no= even in non emacslisp source blocks, otherwise they will be run, causing errors.
+
+#+begin_src shell :tangle no
+/Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java -jar ...
+#+end_src
+
+#+caption: Sample Elisp code for calling a shell commands asynchronously and executing a callback function
+#+begin_src elisp :tangle no
+(async-start (lambda () (shell-command-to-string (concat "python3 " tn/notes-directory ...)))
+             '(lambda (output)
+                (message output)))
+#+end_src
+
+#+caption: [2023-02-21 Tue 11:30 +0100] Delete local timemachine snapshots -> Saves space
+#+begin_src shell :tangle no
+for d in $(tmutil listlocalsnapshotdates | grep "-"); do sudo tmutil deletelocalsnapshots $d; done
+#+end_src
+
+Remapping macos keys. File [[~/Library/LaunchAgents/com.local.KeyRemapping.plist][here]].
+
+#+caption: [2023-02-22 Wed 11:30 +0100] Merging all pdf files in a directory
+Merging all pdf files in a directory
+#+begin_src shell :tangle no
+ls -v *.txt | bash -c 'IFS=$'"'"'\n'"'"' read -d "" -ra x;pdfunite "${x[@]}" output.pdf'
+#+end_src
+* Source Code
+The file "config.org" contains snippets of code in a language called =emacs-lisp=. This code is used to customise the look, feel and features of this version of Doom Emacs.
+
+The code is written into "Source Blocks" (#+begin_src [...] #+end_src). If you write valid code and press "C-c C-c" which your cursor in it, the code will run. Moreover, writing ":tangle yes"  means that when you save this file (in this case "Config.org"), a new file will be generated automatically, combining all source blocks. The filename in this is "config.el", where ".el" comes from the fact the code is in =emacs-lisp=. This technique of having two files, one with the documentation and another with just the code is called [[https://en.wikipedia.org/wiki/Literate_programming][Literate Programming]] and it is rarely used, but it's nice because you can write in it normally, as opposed to writing unformatted comments directly in code.
+
+You should not change what you are not sure of in this file because you risk breaking things. If you change something and Doom Emacs does not open properly, you need to delete (or revert to original) the relevant lines in the file "config.org" *and* in "config.el". Don't panic!
+
+** Global Keybindings
+Keybindings are a series of keys which is connected to some command, also called function. Keybindings are bundled into mode-specific "maps", that is a list that associates a key sequence to a command. When you press the keys, the map of the current mode is checked to get the command.
+
+The following commands are be used to change keybindings:
++ global-set-key :: inserts a key in the global map (will work always)
++ define-key :: inserts a key into the specific map
+: (define-key mode-name-map (kbd "your keys here") 'mode-name-your-command-here)
+
+To remove a key-binding, set it to "nil". Either of the following commands work.
+: (global-set-key (kbd "your keys here") nil)
+: (define-key global-map (kbd "your keys here") nil)
+
+#+begin_src emacs-lisp
+(global-set-key                       (kbd "s-è")            'previous-buffer)
+(global-set-key                       (kbd "s-ì")            'next-buffer)
+(global-set-key                       (kbd "s-é")            'winner-undo)
+(global-set-key                       (kbd "s-^")            'winner-redo)
+
+;; unsets the default commands to move to the (previous|next) buffer
+(global-set-key                       (kbd "C-x C-<left>")   'tab-previous)
+(global-set-key                       (kbd "C-x C-<right>")  'tab-next)
+(global-set-key                       (kbd "C-x C-b")        'tab-switch)
+
+; typical cmd-x
+(define-key global-map                (kbd "s-x")            'kill-region)
+; close all open files
+(define-key global-map                (kbd "C-x x c")        'desktop-clear)
+
+; unset annoying emacs-lisp default commands
+(define-key tab-bar-map               (kbd "<wheel-down>")                                 'nil)
+(define-key tab-bar-map               (kbd "<wheel-up>")                                   'nil)
+(define-key tab-bar-map               (kbd "<wheel-left>")                                 'nil)
+(define-key tab-bar-map               (kbd "<wheel-right>")                                'nil)
+(define-key tab-bar-map               (kbd "<tab-bar> <wheel-right> <wheel-right>")        'nil)
+(define-key tab-bar-map               (kbd "<tab-bar> <wheel-left> <wheel-left>")          'nil)
+(define-key tab-bar-map               (kbd "<tab-bar> <double-wheel-right> <wheel-right>") 'nil)
+(define-key tab-bar-map               (kbd "<tab-bar> <double-wheel-left> <wheel-left>")   'nil)
+(define-key tab-bar-map               (kbd "<help-echo> <tab-bar> <double-wheel-right>")   'nil)
+(define-key tab-bar-map               (kbd "<help-echo> <tab-bar> <double-wheel-left>")    'nil)
+(define-key tab-bar-map               (kbd "<help-echo> <tab-bar> <triple-wheel-right>")   'nil)
+(define-key tab-bar-map               (kbd "<help-echo> <tab-bar> <triple-wheel-left>" )   'nil)
+(define-key global-map                (kbd "C-<wheel-down>")                               'nil)
+(define-key global-map                (kbd "C-<wheel-up>")                                 'nil)
+(define-key global-map                (kbd "C-<backspace>")                                'nil)
+(define-key global-map                (kbd "s--")                                          'nil)
+(define-key global-map                (kbd "s-+")                                          'nil)
+(global-set-key                       (kbd "M-x")                                          'nil)
+(define-key general-override-mode-map (kbd "M-x")                                          'nil)
+(define-key global-map                (kbd "s-m")                                          'nil)
+
+(define-key global-map                (kbd "C-h O")          '+lookup/online-select)
+
+
+; search over all open files
+(global-set-key                       (kbd "s-F")            'consult-line-multi)
+
+(global-set-key                       (kbd "M-z")            'execute-extended-command)
+
+; opens the clipboard
+(global-set-key                       (kbd "M-q")            'yank-pop)
+(global-set-key                       (kbd "C-c v v")        'highlight-changes-mode)
+
+(global-set-key                       (kbd "C-c r")          'replace-string)
+
+; nice for aligning multiple lines
+(global-set-key                       (kbd "C-c R")          'align-regexp)
+
+; searching text in the files, starting from the cursor
+(global-set-key                       (kbd "s-e")            'isearch-forward)
+(global-set-key                       (kbd "s-r")            'isearch-backward)
+(define-key isearch-mode-map          (kbd "s-e")            'isearch-repeat-forward)
+(define-key isearch-mode-map          (kbd "s-r")            'isearch-repeat-backward)
+
+; macos utils / opening a file
+(global-set-key                       (kbd "s-o")            '+macos/open-in-default-program)
+(global-set-key                       (kbd "s-D")           #'(lambda () (interactive)
+                                                                (shell-command-to-string "open -a Terminal .")))
+(global-set-key (kbd "s-d") '+vterm/here)w
+
+
+; cut / copy / paste a rectangular portion of the current file to another place
+(global-set-key                       (kbd "C-x s-c")        'copy-rectangle-as-kill)
+(global-set-key                       (kbd "C-x s-x")        'kill-rectangle)
+(global-set-key                       (kbd "C-x s-v")        'yank-rectangle)
+
+; easier command for repeating keyboard macros
+(global-set-key                       (kbd "C-x à")          'call-last-kbd-macro)
+
+; inserting a backtick character
+(global-set-key                       (kbd "M-\\")          #'(lambda () (interactive)
+                                                                (insert "`")))
+; opening telegram web
+(global-set-key                       (kbd "C-x x T")        #'(lambda ()
+                                                                 (interactive)
+                                                                 (browse-url
+                                                                  "https://web.telegram.org/a/")))
+
+; opening the most used files using cmd-1
+(global-set-key                       (kbd "s-1")          #'(lambda () (interactive)
+                                                              (find-file "~/.doom.d/config.org")))
+(global-set-key                       (kbd "s-2")         #'(lambda () (interactive)
+                                                              (find-file tn/uni-status-file)))
+
+; jump to beginning / end of the file in the emacs way
+(global-set-key                       (kbd "M-a")          'beginning-of-line)
+(global-set-key                       (kbd "M-e")          'end-of-line)
+
+#+end_src
+
+
+Changes the Emacs default behaviour to the standard macos behaviour: CMD-x should not cut the paragraph/word backwards if nothing is selected.
+#+caption: Safe "(kill-region)"
+#+begin_src emacs-lisp
+(defun th/kill-region-no-dwim ()
+  (interactive)
+  (when (region-active-p)
+    (call-interactively 'kill-region)))
+
+(global-set-key (kbd "s-x") 'th/kill-region-no-dwim)
+#+end_src
+
+Pastebin support.
+
+#+caption: Minor Modes support
+#+begin_src emacs-lisp
+(use-package 0x0
+  :config (global-set-key (kbd "C-x x u") '0x0-upload-text))
+
+; line numbering
+(global-set-key (kbd "C-x x l") 'linum-mode)
+
+; use the default
+(global-set-key (kbd "M-s M-d") 'osx-dictionary-search-input)
+
+; reopen the last file search
+(global-set-key (kbd "s-i") 'vertico-repeat)
+
+; view xkcd
+(use-package xkcd
+  :config (global-set-key (kbd "C-x x k") 'xkcd)
+  (define-key xkcd-mode-map (kbd "g") 'xkcd-get))
+#+end_src
+
+#+begin_src emacs-lisp
+(toggle-frame-maximized)
+#+end_src
+
+** Global Modes
+#+caption: Global modes
+#+begin_src emacs-lisp
+(setq global-hl-line-modes '(prog-mode conf-mode special-mode org-agenda-mode dired-mode))
+                                        ; show the other parenthesis
+(show-paren-mode)
+(which-function-mode)
+
+                                        ; [2023-02-21 Tue +0100] not extensible
+(use-package hl-todo
+  :config (setq hl-todo--regexp "\\(\\<\\(TODO\\|unclear\\|addex\\|expa\\|DEPRECATED\\|Note\\|Maybe\\)\\)")
+  (setq hl-todo-keyword-faces '(("TODO" warning bold)
+                                ("unclear" error bold)
+                                ("addex" font-lock-keyword-face bold)
+                                ("expa" font-lock-constant-face bold)
+                                ("DEPRECATED" font-lock-doc-face bold)
+                                ("Note" org-table)
+                                ("Maybe" marginalia-string))))
+
+; disables showing line numbers by default
+(global-visual-line-mode -1)
+
+; async operations for viewing files
+(use-package dired-async
+  :config (dired-async-mode)
+  (async-bytecomp-package-mode))
+
+; auto close paranthesis
+(use-package smartparens
+  :config (turn-on-smartparens-mode))
+
+                                        ; moving of selected lines up/down
+(use-package move-dup
+  :config (global-move-dup-mode))
+
+#+end_src
+
+#+begin_src emacs-lisp
+; copying the line of the cursor to the clipboard
+(defun tn/save-line ()
+  (interactive)
+  (save-mark-and-excursion
+    (move-beginning-of-line 1)
+    (set-mark (point))
+    (move-end-of-line 1)
+    (kill-ring-save (mark) (point))
+    (message "Copied line to clipboard")))
+
+(global-set-key (kbd "C-ò")          'tn/save-line)
+
+; select the line of the currsos
+(defun tn/mark-line ()
+  (interactive)
+  (move-beginning-of-line 1)
+  (set-mark (point))
+  (move-end-of-line 1))
+
+(global-set-key (kbd "C-ç")          'tn/mark-line)
+(global-set-key (kbd "M-w")          'org-mark-element)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/async-shell (command)
+  "Executes the shell command and messages the output as a callback function"
+  (async-start
+   `(lambda ()
+      (shell-command-to-string ,command))
+   `(lambda (output)
+      (message output))))
+#+end_src
+
+** Major Modes Shortcuts
+
+Emacs operates by setting 'modes'. There are Major (Java, Python, C++) and minor modes (line-numbers, word wrap, indenting). If files don't have the correct extension, it is nice to have a quick way to switch to the correct mode.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x o") 'org-mode)
+(global-set-key (kbd "C-x f") 'fundamental-mode)
+#+end_src
+
+** Company
+Autocomplete support
+#+begin_src emacs-lisp :tangle no
+(require 'company)
+
+(global-set-key (kbd "C-,") '+company/complete)
+(define-key company-active-map    (kbd "TAB")       'nil)
+(define-key company-active-map    (kbd "<tab>")     'nil)
+(define-key company-active-map    (kbd "<backtab>") 'nil)
+
+(add-to-list 'company-backends 'company-dabbrev) ; adds suggestion of abbreviations from the current buffer
+(setq company-dabbrev-other-buffers 't)          ; suggest abbreviations from other buffers too
+
+(after! org
+  (define-key org-mode-map (kbd "C-,") 'nil))
+#+end_src
+
+** Sexp
+Quick editing of structure of text between parenthesis / square brackets / curly brackets
+#+begin_src emacs-lisp
+; erases the whole content between parentheses, assuming the cursor is already on top of a closed parenthesis
+(global-set-key (kbd "C-s-<backspace>") 'backward-kill-sexp)
+#+end_src
+
+** Git
+*** Automatic git commit
+#+begin_src emacs-lisp
+; quick and dirty automatic committing
+(defun tn/auto-git-commit ()
+  (interactive)
+  (tn/async-shell "git commit -am \".\""))
+
+(global-set-key (kbd "s-'") 'tn/auto-git-commit)
+#+end_src
+
+#+caption: .gitignore example to only commit some kinds of files
+#+begin_export ascii
+# ignore all files
+*
+*.*/
+
+# But not these files
+!.gitignore
+
+!*/
+
+!**.org*
+!**/*.org*
+
+!**.py*
+**.ipynb_checkpoints
+
+!**.R*
+!**.ipynb
+!**.java*
+#+end_export
+
+** youtube-dl
+Integrated downloading of youtube files as songs or as videos, to a predefined folder.
+
+#+begin_src emacs-lisp
+(defvar tn/data-directory ...)
+(defvar tn/data-folder-songs ...)
+(defvar tn/data-folder-ytube ...)
+
+(defun tn/ytube-dl-video ()
+  (interactive)
+  (let ((quality (read-number "Max size: " 720))
+        (link (read-string "Link: ")))
+  (shell-command (concat "yt-dlp -f \"mp4 "
+                   (format "bestvideo[height<=%s]+bestaudio/best[height<=%s]" quality quality)
+                   " \" -o \"" tn/data-folder-ytube "/"
+                   "%(uploader)s - %(title)s.%(ext)s\" --restrict-filenames \""
+                   link " \"&") "Process" "nil")))
+
+(defun tn/ytube-dl-song ()
+  (interactive)
+  (let ((link (read-string "Link: ")))
+        (shell-command (concat "yt-dlp -f \"bestaudio[ext=m4a]\" -o \"" tn/data-folder-songs "/"
+                               "%(uploader)s - %(title)s.%(ext)s\" --restrict-filenames \"" link " \"&") "Process" "nil")))
+#+end_src
+
+* Window
+Emacs offers by default a tiling internal window manager for viewing buffers (aka. text windows of files)
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x <left>"   )  'windmove-left)
+(global-set-key (kbd "C-x <right>"  )  'windmove-right)
+(global-set-key (kbd "C-x <up>"     )  'windmove-up)
+(global-set-key (kbd "C-x <down>"   )  'windmove-down)
+(global-set-key (kbd "C-x x <left>" )  'windmove-swap-states-left)
+(global-set-key (kbd "C-x x <right>")  'windmove-swap-states-right)
+(global-set-key (kbd "C-x x <up>"   )  'windmove-swap-states-up)
+(global-set-key (kbd "C-x x <down>" )  'windmove-swap-states-down)
+; unsets the default command
+(global-set-key (kbd "C-z"          )  'nil)
+#+end_src
+
+** vlf
+Default importing of vlf (very-large-files) mode.
+
+#+begin_src emacs-lisp
+(require 'vlf-setup)
+#+end_src
+* Doom Configuration
+Sets the theme.
+
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-monokai-classic)
+#+end_src
+
+* Org Mode
+Some variables must be set on a session to session basis, as customisation would revert them.
+
+#+begin_src emacs-lisp
+;; otherwise limited functionalities like cannot indent with tabs in src blocks because org-eldoc-get-src-lang definition is
+(require 'org-eldoc)
+
+;; utility code for
+;;(setq org-agenda-files (directory-files-recursively "~/Notes/" "\.org$"));;
+
+; I prefer it this way
+(setq org-add-colon-after-tag-completion 'nil)
+
+; the agenda should start from Monday
+(setq org-agenda-start-day 'nil)
+
+; changes how 'highlight' looks visually, as the default way is not striking enough
+(defface tn/highlight
+  '((t :background "#FFD700" :foreground "#000000"))
+  "Face with a yellow background.")
+
+; for some files it's necessary
+(define-key org-mode-map (kbd "C-x x d")  'org-indent-mode)
+
+(define-key org-mode-map (kbd "s-<down>") 'org-metadown)
+(define-key org-mode-map (kbd "s-<up>")   'org-metaup)
+(define-key org-mode-map (kbd "s-p")      'consult-org-heading)
+
+(global-set-key          (kbd "C-x C-s") 'org-save-all-org-buffers)
+
+(global-set-key          (kbd "C-c k")   'org-time-stamp-inactive)
+(global-set-key          (kbd "C-c .")   'org-time-stamp)
+
+(require 'info)         ;; [2023-01-19 Thu] :: imports the face used by the font of the emphasis marker '*'
+
+(define-key org-mode-map (kbd "M-n")         'org-next-visible-heading)
+(define-key org-mode-map (kbd "M-p")         'org-previous-visible-heading)
+(define-key org-mode-map (kbd "C-c C-n")     'org-next-link)
+(define-key org-mode-map (kbd "C-c C-p")     'org-previous-link)
+
+(load "~/.doom.d/org-pretty-table.el")
+(global-org-pretty-table-mode)
+
+; automatically opens .org_archive files in org-mode (major mode)
+(add-to-list 'auto-mode-alist '("\\.org_archive\\'" . org-mode))
+
+; used to simplify custom files to
+(defvar tn/link-HOME-dir ...)
+#+end_src
+
+** Maps link
+Created custom 'maps' links that open google maps, either searching a place or the path between two places.
+
+#+caption: Sample Links
+#+begin_export ascii
+[[maps:Content][What you see]]
+#+end_export
+
+#+begin_src emacs-lisp :tangle yes
+(defun tn/make-maps-link (path)
+  "Execute the opening action of a maps link, with direction-from equal to the text before the first comma and direction-to equal to the text after the first comman and (possibly) a second comma"
+  (let  ((directions (split-string path ",")))
+    (browse-url
+     (if (equal (length directions) 1)
+         (concat "https://www.google.com/maps/place/" (string-replace " " ",+" (car directions)))
+       (concat "https://www.google.com/maps/dir/" (string-replace " " ",+" (car directions)) "/"
+               (string-replace " " "+" (car (cdr directions))))))))
+
+(org-link-set-parameters "maps" :follow #'tn/make-maps-link)
+
+(defun tn/open-maps-direction ()
+  (interactive)
+  (let ((from (string-replace " " ",+" (read-string "From: ")))
+        (to   (string-replace " " ",+" (read-string "To  : "))))
+    (browse-url
+     (if (equal "" to)
+         (concat "https://www.google.com/maps/place/" from)
+       (concat "https://www.google.com/maps/dir/" from "/" to)))))
+
+(global-set-key (kbd "C-x x m") 'tn/open-maps-direction)
+#+end_src
+
+** Search website
+
+Depending on the file, it can be useful to search words on a website. Most websites handle search quieries in the same way, so 'website' variable has to be set to the right value on a file-by-file basis. Select some words in the file, then call the command. The words will be appended to the link and searched online.
+
+Sample uses and corresponding website:
+- Learning Spanish :: online dictionary.
+- Favourite songs :: youtube.
+
+#+caption: Typical File configuration (last lines)
+#+begin_example
+# Local Variables:
+# eval: (setq-local tn/search-website "https://www.youtube.com/results?search_query=")
+# End:
+#+end_example
+
+#+begin_src emacs-lisp
+; default search website
+(defvar tn/search-website "https://www.google.com/search?q\="
+  "Search website to used for text, which concated to a sequence of
+words separated by a '+' character")
+
+(defun tn/open-informal-link ()
+  "Reads the line and searches for it online using 'tn/search-website' variable"
+  (interactive)
+  (let* ((input (s-replace " " "+"
+                           (string-trim-left
+                            (downcase (if (region-active-p)
+                                          (buffer-substring (region-beginning) (region-end))
+                                        (buffer-substring
+                                         (save-excursion
+                                           (if (string-equal major-mode "org-mode")
+                                               (org-beginning-of-line)
+                                             (beginning-of-line))
+                                           (point))
+                                         (point-at-eol))))
+                            "[ ]+"))))
+    (browse-url
+     (concat (if (s-starts-with? "https:" input) "" tn/search-website) input))))
+
+(global-set-key (kbd "C-x ,") 'tn/open-informal-link)
+#+end_src
+
+** Daily Challenge
+Python parser that
+
+#+begin_src emacs-lisp
+(defun tn/daily-challenge ()
+  (shell-command-to-string (concat "python3 " tn/notes-directory ...)))
+#+end_src
+
+** Macro
+
+By default, Macros are special emacs-lisp functions that are called within org-mode at export, with contents inserted in the file.
+#+begin_example
+#+macro: result (eval (function-name $1 $2 $3))
+
+{{{result(A, B, C)}}}
+#+end_example
+
+With the following code, macros are raised in status: whenever the file is reloaded, all macro functions are evaluated and the results are overlayed at a file-local level.
+
+Currently, there is no check against unsafe macro code, which is unsafe, technically.
+
+#+begin_src emacs-lisp
+;; Display macros inline in buffers
+(add-hook 'org-mode-hook
+          (lambda ()
+            (setq-local font-lock-extra-managed-props
+                        `(display ,@font-lock-extra-managed-props))))
+
+(font-lock-add-keywords
+ 'org-mode
+ '(("\\({{{[a-zA-Z#%)(_-+0-9]+}}}\\)" 0
+    `(face nil display
+      ,(format "%s"
+               (let* ((input-str (match-string 0))
+                      (el (with-temp-buffer
+                            (org-mode)
+                            (insert input-str)
+                            (goto-char (point-min))
+                            (org-element-context)))
+                      (text (org-macro-expand el org-macro-templates)))
+                 (if text
+                     text
+                   input-str)))))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/macro-matches-buffer (word)
+  "Returns a string descriptor of the number of matches in the buffer.\nNeeds to be enclosed like \"#+macro: counted (eval (tn/macro-matches-buffer $1))\" and it will update at every org-mode file reload."
+  (concat "\"" word "\"" " count: "(number-to-string (count-matches word))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/dates-buffer-estimate (isoStart-clocks)
+  "Returns a string descriptor of the estimated matches in the buffer after prolonged days, considering that so far days have passed.\nNeeds to be enclosed like \"#+macro: counted (eval (tn/macro-matches-buffer $1 $2 $3))\" and it will update at every org-mode file reload. The date must be in format \"%Y-%m-%d\" and prolonged as well must be a string."
+  (let* ((days-clocks  (1+ (days-between (format-time-string "%Y-%m-%dT01") (concat isoStart-clocks  "T01"))))
+         (prolonged   365)
+         (prolonged-s (format "%d" 365))
+
+         (clocks      (+ (count-matches "CLOCK: ") (count-matches "^+ <")))
+         (today       (format-time-string "%Y-%m-%d"))
+         (clocks-t    (+ (count-matches (concat "CLOCK: \\[" today)) (count-matches (concat "^+ <" today)))) ;; matches for today
+
+         (avg-clocks    (/ clocks days-clocks))
+
+         (clocks-c  (concat "\"CLOCK\" count: "
+                            (format "%d" clocks)))
+
+         (start-clocks  (concat "Date of start: " isoStart-clocks ", ("   (number-to-string days-clocks) "d)"))
+         (dailyclocks   (concat "Daily Average: " (format "%d" avg-clocks)  ", (" (format "%d" clocks-t)  " today)"))
+
+         (proj-clocks (number-to-string
+                       (truncate
+                        (* (round
+                            (* (/ (float clocks)
+                                  days-clocks)
+                               prolonged)
+                            100)
+                           100))))
+
+         (projection-clocks  (concat "Projected " prolonged-s ": " proj-clocks))
+
+         (summary-clocks  (concat clocks-c  "\n" dailyclocks  "\n" projection-clocks)))
+    (concat start-clocks "\n\n" summary-clocks)))
+#+end_src
+
+*** Weather
+Macro to view the weather in the file.
+
+#+begin_src emacs-lisp
+(defvar tn/weather-string ""
+  "String that records the output of a weather text")
+
+(defun tn/getweather ()
+  (let ((weather (shell-command-to-string "timeout 1 curl 'wttr.in/Milano?T' 2> /dev/null | head -n 17 | tail -n 10")))
+    (when (not (string= weather ""))
+      (setq tn/weather-string weather))
+    tn/weather-string))
+#+end_src
+
+Single measurement
+: #+macro: weather (eval (shell-command-to-string "curl 'wttr.in/Milano?T' 2> /dev/null | head -n 7"))
+: {{{weather}}}
+
+*** wttrin
+#+begin_src  emacs-lisp :tangle no
+(load "~/.doom.d/wttrin.el")
+(setq wttrin-default-cities '(...))
+(setq wttrin-default-accept-language '("Accept-Language" . "en-GB"))
+#+end_src
+
+** Git log
+
+View git commits in the agenda.
+
+#+begin_src emacs-lisp :tangle no
+(defun aes/day-add (day n)
+  "Add N days to DAY."
+  (time-add day (days-to-time n)))
+
+(defun aes/calendar-sexp-list-to-time (sexp-list)
+  "Convert SEXP-LIST to a time object."
+  (encode-time 0 0 0 (nth 1 sexp-list) (nth 0 sexp-list) (nth 2 sexp-list)))
+
+(defun aes/get-today-commits ()
+  (let* ((date '(03 04 2023))
+         (today (aes/calendar-sexp-list-to-time date))
+         (yesterday (aes/day-add today -1))
+         (yesterday-string (format-time-string "%Y-%m-%d" yesterday))
+         (today-string (format-time-string "%Y-%m-%d" today))
+         (git-command (format "cd ~/Notes/; git log --oneline --pretty='%%ad %%an: %%s' --date=format-local:'%%H:%%M' --since=%s --until=%s" yesterday-string today-string)))
+    (s-trim (s-replace "\n" "; " (shell-command-to-string git-command)))))
+#+end_src
+
+#+caption: Utility code - Print dated list of past
+#+begin_src shell :wrap org :results none :tangle no
+git log --pretty='%ad %B' --date=format-local:'+ <%Y-%m-%d %a %H:%M>' HEAD | tr -s '\n\n' '\n'
+#+end_src
+
+** vc-gutter commands
+
+View git changes in the file at the far left, as symbold (removed, added, refactored).
+
+#+begin_src emacs-lisp
+(define-key global-map   (kbd "C-c v r")     '+vc-gutter/revert-hunk)
+(define-key global-map   (kbd "C-c v n")     '+vc-gutter/next-hunk)
+(define-key global-map   (kbd "C-c v p")     '+vc-gutter/previous-hunk)
+#+end_src
+
+** Org capture
+Org-captures are an org-mode way to define shortcuts that quickly add some text to a file, following a format that the user defines. Org-capture shortcuts allow users to quickly insert the data, which is immediately appended to the file, without switching the current view.
+
+#+begin_src emacs-lisp
+(defun tn/capture-get-file ()
+  (if (file-exists-p (buffer-name))
+      (file-name-sans-extension (buffer-name))
+    tn/capture-file-todos))
+
+(defun tn/capture-get-org-file ()
+  (let ((buf (buffer-name)))
+    (if (file-exists-p buf)
+        (if (s-ends-with? ".org" buf)
+            buf
+          (concat (file-name-sans-extension (buffer-name)) ".org"))
+      tn/capture-file-todos)))
+
+; creates a path relative to the file.
+; A diary is a second file that documents the evolution of the first.
+(defun tn/capture-get-diary-file ()
+  "If the file is .org, returns it,
+    otherwise return the Journal file"
+  (let ((buffer (buffer-name)))
+    (if (file-exists-p buffer)
+        (if (equal (file-name-extension buffer) "org")
+            (concat "Journal - " buffer)
+            (concat (file-name-sans-extension buffer) ".org"))
+      tn/capture-file-todos)))
+#+end_src
+
+#+begin_src emacs-lisp
+(defvar tn/notes-directory "~/Notes"
+  "Same value as org-directory. Use in the creation of relative file paths.")
+(defvar tn/capture-file-source     (concat tn/notes-directory ...))
+(defvar tn/capture-file-diary      (concat tn/notes-directory ...))
+(defvar tn/capture-file-mood       (concat tn/notes-directory ...))
+(defvar tn/capture-file-songs      (concat tn/notes-directory ...))
+(defvar tn/capture-file-todos      (concat tn/notes-directory ...))
+(defvar tn/capture-file-habits     (concat tn/notes-directory ...))
+(defvar tn/capture-file-reminders  (concat tn/notes-directory ...))
+(defvar tn/capture-file-food       (concat tn/notes-directory ...))
+
+(define-key global-map   (kbd "s-ò")     'org-capture)
+(define-key global-map   (kbd "s-à")     'org-capture-goto-target)
+
+(defvar tn/uni-status-file (concat tn/notes-directory ...))
+#+end_src
+
+** Temporary files with quick ideas
+
+#+begin_src emacs-lisp
+(defvar tn/capture-tmp-dir "~/tmp"
+  "Directory of the temporary files obtained using org-capture")
+
+(defun tn/get-tmp-filename ()
+  (let* ((time (format-time-string "%Y-%m-%d %H:%M"))
+        (input (org-trim (read-string "Select filename: ")))
+        (ext (file-name-extension input)))
+          ; if the input was a nonempty string
+          (if (> (length input) 0)
+              ; composes the file name
+              (concat tn/capture-tmp-dir "/" time " " input (if ext "" ".org"))
+              ; asks the user to select an existing file
+              (read-file-name "File: " (concat tn/capture-tmp-dir "/")))))
+#+end_src
+
+** Babel
+org-mode allows user to embed code in any language the documents and run it.
+
+Ensures that in python source blocks print() appears in the results at the cost of not printing automatically the return statement.
++ Use =:results value= to print the return value of a block
+
+#+begin_src emacs-lisp
+(setq org-babel-default-header-args:python '((:results . "output")))
+#+end_src
+
+** Convert ics to org file
+Importing .ics (calendar) files to org-mode has been necessary to have a uniform view of logs.
+
+# [2022-11-04 Fri] :: tried using ical2org.awk but the regexp did not work and I could not fix it
+# [2022-11-04 Fri] :: used ical2org.go (it required the installation of the go language)
+# [2022-11-04 Fri] :: the program worked with offline files and links. Added to config a src block so that I can quickly import org files from links. I recommend using mc and replace text to format
+#+begin_src emacs-lisp :tangle no
+(load "~/.doom.d/Ical.el")
+#+end_src
+- [[ICS LINK][Lessons]]
+- [[ICS Link][Exams]]
+- [[ICS LINK][Appointments]]
+
+** clock
+Shortcuts to log activities.
+
+#+begin_src emacs-lisp
+(require 'org-mru-clock)
+(define-key global-map   (kbd "C-x C-x")     'nil)
+(define-key global-map   (kbd "C-c C-x C-o") 'org-clock-out)
+(define-key global-map   (kbd "C-x C-x i")   'org-mru-clock-in)
+(define-key global-map   (kbd "C-x C-x g")   'org-mru-clock-goto)
+(define-key global-map   (kbd "C-x C-x a")   'org-mru-clock-add-note)
+(define-key global-map   (kbd "C-x C-x b")   'org-mru-clock-add-backlink)
+(define-key global-map   (kbd "C-x C-x s")   'org-mru-clock-show-narrowed)
+#+end_src
+
+#+caption: [2023-02-25 Sat] Merging
+#+begin_src emacs-lisp
+
+; adds a "\n- " string if the enter key is pressed within 0.5 seconds of calling the tn/insert-daily-clock method
+(defun th/maybe-execute (&rest ignore)
+  (interactive)
+  (unless (sit-for 0.5)
+    (when (eql 'return last-input-event)
+      (insert "\n- ")
+      (discard-input))))
+
+; runs after tn/insert-daily-clock
+(advice-add 'tn/insert-daily-clock :after 'th/maybe-execute)
+
+; utility, terrible code, but it gets the job done
+(defun tn/insert-daily-clock (&optional suggest)
+  ""
+  (interactive "P")
+
+  (unless (equal current-prefix-arg '(4))
+    (org-mru-clock-to-history 'nil)
+    (call-interactively 'org-mru-clock-goto))
+
+    (forward-line 1) ;expands the :LOGBOOK: property drawer, which  'org-mru-clock-goto collapses
+    (org-cycle)
+  (let* ((input-first  (read-string "Enter first  time: "))
+         (first-time   (if (string-equal input-first "") (format-time-string "%H:%M") input-first))
+
+         (input-second (read-string "Enter second time: "))
+         (second-time  (if (string-equal input-second "") (format-time-string "%H:%M") input-second))
+
+         (today        (format-time-string "%Y-%m-%d %a"))
+         (insert (concat "first-time " first-time ", " "second-time " second-time)))
+
+    (unless (string-equal first-time second-time)
+      (if (and (string-match-p "^[0-9][0-9]:[0-9][0-9]$" first-time)
+                 (string-match-p "^[0-9][0-9]:[0-9][0-9]$" second-time))
+            (progn
+              (forward-line 1)
+              (org-back-to-heading)
+              (search-forward ":LOGBOOK:")
+              (forward-line)
+              (insert (concat "CLOCK: [" today " " first-time "]--[" today " " second-time "]\n"))
+              (forward-line -1)
+              (org-ctrl-c-ctrl-c)
+              (end-of-line)
+              (th/maybe-execute))
+
+          (if (and (string-match-p "^[0-9][0-9]:[0-9][0-9]$" first-time)
+                   (not (equal (string-to-number second-time) 0)))
+              (progn
+                (let ((minutes (string-to-number second-time)))
+                  (forward-line 1)
+                  (org-back-to-heading)
+                  (search-forward ":LOGBOOK:")
+                  (beginning-of-line 2)
+                  (insert "CLOCK: [" today " " first-time "]--[" today " " first-time "]\n")
+                  (forward-line -1)
+                  (end-of-line)
+                  (if (> minutes 0)
+                      (progn
+                        (backward-word)
+                        (let ((current-prefix-arg minutes))
+                          (call-interactively 'org-shiftup)))
+                    (progn
+                      (backward-word 7)
+                      (let ((current-prefix-arg (- minutes)))
+                        (call-interactively 'org-shiftdown))))
+                  (end-of-line)
+                  (th/maybe-execute)))
+            (message "Invalid format(s)"))))))
+
+
+(define-key global-map (kbd "C-x C-x RET") 'tn/insert-daily-clock)
+#+end_src
+
+#+caption: Utilities in exporting files
+#+begin_src emacs-lisp
+                                        ; (load "~/.doom.d/org-timeline.el")
+                                        ; (add-hook 'org-agenda-finalize-hook 'org-timeline-insert-timeline :append)
+
+(defun tn/filter-emojis (text)
+  "strips strings of emojies"
+  (replace-regexp-in-string "[^\x00-\x7F]+ " "" text))
+#+end_src
+
+Org allows to create [[https://orgmode.org/manual/The-clock-table.html][Summary Tables]] of logs. The following functions are utilities for formatting data.
+
+#+caption
+#+begin_src emacs-lisp
+(defun tn/time-to-floatf (time)
+  "Returns a floating point number with the number of hours in the time"
+  (let ((ls (mapcar #'string-to-number (split-string time "[d :]+" nil "\\*"))))
+    (if (equal (length ls) 3)
+        (setf (nth 0 ls) (* (nth 0 ls) 24.0))) ; set first character from days to minutes
+    (setf (car (last ls))
+          (/ (car (last ls)) 60.0))
+    (-sum ls)))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/days-since (time)
+  (days-between (format-time-string "%Y-%m-%dT01") (concat time "T01")))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun th/current-days ()
+  (let ((span (buffer-local-value 'org-agenda-current-span org-agenda-buffer)))
+    (cl-case span
+      (day 1)
+      (week 7)
+      (fortnight 14)
+      (month 30)
+      (year 365)
+      (t span))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/form-% (fl)
+  (format "%2.1f%%" (* fl 100)))
+
+(defun tn/percent-agenda-time (time)
+  (tn/form-% (/ (tn/time-to-floatf time) (* (th/current-days) 24.0))))
+
+(defun tn/daily-hours-agenda (time)
+  (format "%2.2f" (/ (tn/time-to-floatf time) (th/current-days))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/avg-daily (startdate totaltime unit)
+  "Computes and returns the average, formatted to two decimal places"
+  (let* ((minutes (tn/time-to-floatf totaltime))
+         (days (tn/days-since startdate))
+         (daily (/ minutes days))
+         )
+    (if (equal (tn/time-to-floatf totaltime) 0.0)
+        ""
+      (format (concat "%2.2f " unit) daily))
+    ))
+#+end_src
+
+** Splitting sunset / sunrise and adding them as two diary entries per day
+# [2023-01-21 Sat 20:58] :: archive
+#+begin_src emacs-lisp
+(require 'solar)
+(setq calendar-location-name ...)
+(setq calendar-latitude  ...)
+(setq calendar-longitude ...)
+
+;; Sunrise (edits by Eph Zero)
+;; Brady Trainor
+;; http://stackoverflow.com/questions/22889036/custom-diary-sunrise-function-not-working-autoload-diary-emacs
+
+(defun solar-sunrise-string (date &optional nolocation)
+  "String of *local* time of sunrise and daylight on Gregorian DATE."
+  (let ((l (solar-sunrise-sunset date)))
+    (format
+     "%s - 🌅 %sh light"
+     (if (car l)
+         (concat "Sunrise " (apply 'solar-time-string (car l)))
+       "no sunrise")
+     (nth 2 l)
+     )))
+;; To be called from diary-list-sexp-entries, where DATE is bound.
+;;;###diary-autoload
+(defun diary-sunrise ()
+  "Local time of sunrise as a diary entry.
+  Accurate to a few seconds."
+  (or (and calendar-latitude calendar-longitude calendar-time-zone)
+      (solar-setup))
+  (solar-sunrise-string date))
+
+;; Sunset
+;; Brady Trainor
+;; http://stackoverflow.com/questions/22889036/custom-diary-sunrise-function-not-working-autoload-diary-emacs
+
+(defun solar-sunset-string (date &optional nolocation)
+  "String of *local* time of sunset and daylight on Gregorian DATE."
+  (let ((l (solar-sunrise-sunset date)))
+    (format
+     "%s"
+     (if (cadr l)
+         (concat "Sunset  " (apply 'solar-time-string (cadr l)) " - 🌇 ")
+       "no sunset")
+     )))
+;; To be called from diary-list-sexp-entries, where DATE is bound.
+;;;###diary-autoload
+(defun diary-sunset ()
+  "Local time of sunset as a diary entry.
+  Accurate to a few seconds."
+  (or (and calendar-latitude calendar-longitude calendar-time-zone)
+      (solar-setup))
+  (solar-sunset-string date))
+
+(provide 'sunrise-sunset)
+#+end_src
+
+** xwidget-webkit
+# [2023-02-05 Sun 15:01]
+Utility to visualise .html maps of the day's location history in the agenda.
+
+#+begin_src emacs-lisp
+(defun tn/open-html-link (path)
+  (xwidget-webkit-browse-url (concat "file://" (file-truename path))))
+
+(defun tn/open-xwidget-link (path)
+  (xwidget-webkit-browse-url path))
+
+(org-link-set-parameters "html"  :follow #'tn/open-html-link)
+(org-link-set-parameters "local" :follow #'tn/open-xwidget-link)
+#+end_src
+
+** org-noter
+Annotating PDF files with an org-mode file side by side so by scrolling one file the other scrolls automatically.
+
+#+begin_src emacs-lisp :tangle no
+(after! org-noter
+  (defun tn/org-noter-insert-precise ()
+    "Insert a precise location in the document. Made by Ali Emre Senel <aliemre@senel.biz> Tue Feb 28 14:33 2023"
+    (interactive)
+    (org-noter--with-valid-session
+     (let* ((ast (org-noter--parse-root)) (contents (org-element-contents ast))
+            (window (org-noter--get-notes-window 'force))
+            force-new
+            (location (org-noter--doc-approx-location (or (org-noter--get-precise-info) 'interactive) (gv-ref force-new)))
+            (str-location (format "%s" location)))
+       (org-set-property "NOTER_PAGE" str-location))))
+
+  (define-key org-noter-notes-mode-map (kbd "M-i") 'tn/org-noter-insert-precise)
+  )
+#+end_src
+
+** Literate Calc
+Embedded calculator inside your notes.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-M-i") 'nil)
+(define-key org-mode-map (kbd "C-M-i") 'literate-calc-insert-results)
+#+end_src
+
+** Linkify Text
+Make any time a certain word appears in a file into a link. In this case, people's names are linked to their contacts.
+
+#+begin_src emacs-lisp :results none
+(defun tn/org-linkify-names (word-link-pairs linkformat)
+  "Create overlays with radio targets and org links for each word in WORD-LINK-PAIRS."
+  (dolist (word word-link-pairs)
+    (let ((link (format linkformat word)))
+      (save-excursion
+        (goto-char (point-min))
+        (while (search-forward word nil t)
+          (let ((overlay (make-overlay (match-beginning 0) (match-end 0))))
+            (overlay-put overlay 'mouse-face 'highlight)
+            (overlay-put overlay 'face 'link-visited)
+            (overlay-put overlay 'radio-target t)
+            (overlay-put overlay 'help-echo link)
+            (overlay-put overlay 'org-link link)
+            (overlay-put overlay 'keymap
+                         (let ((map (make-sparse-keymap)))
+                           (define-key map (kbd "<mouse-1>")
+                             `(lambda ()
+                                (interactive)
+                                (org-open-link-from-string ,link)))
+                           (define-key map (kbd "RET")
+                             `(lambda ()
+                                (interactive)
+                                (org-open-link-from-string ,link)))
+                           (define-key map (kbd "C-c C-o")
+                             `(lambda ()
+                                (interactive)
+                                (org-open-link-from-string ,link)))
+                           map))))))))
+
+(org-link-set-parameters "pers" :follow #'tn/pers-open)
+
+(defvar tn/people-file (concat tn/notes-directory ...))
+
+(defun tn/pers-open (heading)
+  "Create a popup buffer to `tn/people-file` at the given heading."
+  (split-window-below 25)
+  (windmove-down 0)
+  (org-link-open-as-file (concat tn/people-file "::* " heading) 'nil)
+  (org-narrow-to-subtree)
+  )
+
+(defvar tn/relevant-people '(...))
+#+end_src
+*** Links
+#+begin_src emacs-lisp
+(org-link-set-parameters "file" :face '(:foreground "#03a386" :underline t :weight bold))
+#+end_src
+
+** Next-Project picker
+Tiny utility that extracts a 'next task' with some probability.
+
+As a rule, active projects must be written only one time.
+#+caption: List of projects, ranked by priority
+#+begin_example
+Active projects
+- A :: project1, project2
+- B :: project3, project4
+- C :: project6, project5
+#+end_example
+
+#+caption: Semifull Basket (or empty)
+#+begin_example
+Remaining basket
+- project3, project5
+#+end_example
+
+#+caption: Last project
+#+begin_example
+Completed
+- TIMESTAMP :: PROJECT - time
+#+end_example
+
+#+begin_src emacs-lisp :tangle no
+(defvar tn/TODOs-file ...)
+(defvar tn/TODOs-active "Active Projects")
+(defvar tn/TODOs-basket "Remaining Basket")
+(defvar tn/TODOs-priorities '("A" "B" "C")
+  "Must be ordered by priority and one letter long")
+(defvar tn/TODOs-expectations '(120 80 50)
+  "Minutes for the expectation of time to dedicate to each task, by priority")
+(defvar tn/TODOs-min-time 20)
+(defvar tn/TODOs-max-time 120)
+
+
+(defun tn/TODOS-get-projects ()
+  "Reads the lines after 'Active Project' in the TODOs.org file."
+  (let* ((file-path tn/TODOs-file)
+         (buffer (find-file-noselect file-path))
+         (active-project-start)
+         (active-project-end))
+    (with-current-buffer buffer
+      (goto-char (point-min))
+      (when (search-forward tn/TODOs-active nil t)
+        (setq active-project-start (progn (forward-line 1) (point))
+              active-project-end (progn (forward-line (+ 1 (length tn/TODOs-priorities))) (point)))))
+    (when (and active-project-start active-project-end)
+      (with-current-buffer buffer
+        (s-trim (buffer-substring-no-properties active-project-start active-project-end))))))
+
+(defun tn/TODOs-filter-projects ()
+  "Separates into an alist the projects extracted from the tn/TODOs-file"
+  (interactive)
+  (let* ((priorities tn/TODOs-priorities)
+         (projects (tn/TODOS-get-projects))
+         ;; dictionary of projects by priority (association list)
+         (lines (split-string projects "\n"))
+         (proj-alist ()))
+    (dolist (line lines)
+      (let* (
+             ;; trims the initial time
+             (indicator (substring line 2 (s-index-of " :: " line)))
+             (p-string (substring line (+ 6 (length indicator))))
+             (project-list (split-string p-string ", ")))
+        (setq proj-alist (cons (cons indicator project-list) proj-alist))
+        ))
+    proj-alist))
+
+(defun tn/TODOs-read-basket ()
+  "Reads the remaining projects in the TODOs.org file as a string"
+  (let* ((file-path tn/TODOs-file)
+         (buffer (find-file-noselect file-path))
+         (active-project-start)
+         (active-project-end))
+    (with-current-buffer buffer
+      (goto-char (point-min))
+      (when (search-forward tn/TODOs-basket nil t)
+        (setq active-project-start (progn (forward-line 1) (point))
+              active-project-end (progn (forward-line 2) (point)))))
+    (when (and active-project-start active-project-end)
+      (with-current-buffer buffer
+        (let* ((s (substring (buffer-substring-no-properties active-project-start active-project-end) 2 -1))
+               (ls (mapcar #'s-trim (split-string (s-trim s) ","))))
+          (if (and (= 1 (length ls)) (s-equals? (car ls) ""))
+              'nil
+            ls)
+          )
+        ))))
+
+(defun tn/TODOs-create-basket (projects)
+  "Create a basket of projects by concatenating their names."
+  (let ((basket ""))
+    (dolist (priority projects)
+      (let ((priority-level (car priority))
+            (project-names (cdr priority)))
+        (let ((multiplier (cond
+                           ((string= priority-level "A") 3)
+                           ((string= priority-level "B") 2)
+                           ((string= priority-level "C") 1)
+                           (t 1)))) ; Default multiplier for unknown priorities
+          (dolist (project project-names)
+            (dotimes (_ multiplier)
+              (setq basket (concat basket project ", ")))))))
+    (substring basket 0 -2)))
+
+(defun tn/TODOs-rewrite-basket (oldbasket drawn projects)
+  "Takes in the 'oldbasket' as a list and rewrites the basket in the buffer after extracting the 'drawn' element from it"
+  (let* ((file-path tn/TODOs-file)
+         (search-string (concat tn/TODOs-basket "\n"))
+                                        ; the new basket is the old without the drawn element
+         (newbasket-list (cl-remove drawn oldbasket :test #'s-equals-p))
+         (newbasket (mapconcat #'identity newbasket-list ", "))
+         (file-buffer (find-file-noselect file-path)))
+
+    ;; repopulates the basket if empty
+    (when (or (not drawn) (= 0 (length newbasket)))
+      (setq newbasket (tn/TODOs-create-basket projects)))
+
+    (with-current-buffer file-buffer
+      (goto-char (point-min))
+      ;; replaces the line after the search string
+      (when (search-forward search-string nil t)
+        (let ((end-of-line (line-end-position)))
+          (delete-region (line-beginning-position) end-of-line)
+          (insert (concat "- " newbasket)))
+        (save-buffer)))
+    )
+  )
+
+(defun tn/TODOs-get-project-priority (p projects)
+  "Returns the numerical priority of a project"
+  (let ((priority 'nil))
+    (dolist (class projects)
+      (if (-contains? (cdr class) p)
+          (setq priority (car class)))
+      )
+    (let ((pos (cl-position priority tn/TODOs-priorities :test #'s-equals-p)))
+      (if pos
+          pos
+        1))))
+
+(defun tn/TODOs-sample-duration (priority)
+  (let* ((r (/ (float (random 2305843009213693950)) 2305843009213693950))
+         (minutes (- (* (nth priority tn/TODOs-expectations) (log r))))
+         (rounded (if (numberp minutes)
+                      (* 10 (ceiling minutes 10))
+                    0)) ; Default value when minutes is not a number
+         )
+    rounded))
+
+(defun tn/TODOs-add-beginning-timestamp (project duration)
+  "Adds at the end of the file a - TIMESTAMP :: PROJECT - DURATION"
+  (let* ((file-path tn/TODOs-file)
+         (file-buffer (find-file-noselect file-path))
+         (timestamp (format-time-string "<%Y-%m-%d %a %H:%M>" (current-time)))
+         (hours (/ duration 60))
+         (minutes (- duration (* hours 60)))
+         )
+    (with-current-buffer file-buffer
+                                        ; ws butler fix - because a newline character is automatically added to the EOF
+      (goto-char (- (point-max) 1))
+      (insert (concat "\n** " timestamp " " (format "%d:%02d" hours minutes) " - " project))
+      (save-buffer))))
+
+(defun tn/TODOs-draw-new ()
+  "Reads from the basket, draws one item and removes it.
+    If the basket is empty, recreates it.
+    Changes the file accordingly."
+  (interactive)
+  (let* ((basket (tn/TODOs-read-basket))
+         (projects (tn/TODOs-filter-projects))
+         (index (random (length basket)))
+         (choice (nth index basket))
+         (priority (tn/TODOs-get-project-priority choice projects))
+         (duration (tn/TODOs-sample-duration priority)))
+    (tn/TODOs-rewrite-basket basket choice projects)
+    (tn/TODOs-add-beginning-timestamp choice duration)
+    (message "Next: %s - %s" choice duration)))
+
+(global-set-key (kbd "C-x C-x p") 'tn/TODOs-draw-new)
+(global-set-key (kbd "C-x C-x P") #'(lambda () (interactive)
+                                      (find-file tn/TODOs-file)))
+#+end_src
+
+** Agenda
+*** Location in the Agenda
+#+begin_src emacs-lisp :tangle no
+(global-set-key (kbd "C-x x p") 'tn/maps-produce-all)
+
+(defvar tn/maps-directory-...  (concat tn/link-HOME-dir ...)
+(defvar tn/maps-directory-... (concat tn/link-HOME-dir ...))
+
+(defun tn/maps-switch-location-history ()
+  "Interactive switching of the location history (device)
+    in the org agenda"
+  (interactive)
+  (setq tn/maps-current-agenda-view (completing-read
+                                     "Switch Location directory"
+                                     `(,tn/maps-directory-...
+                                       ,tn/maps-directory-...-out))))
+
+(global-set-key (kbd "C-x x S") 'tn/maps-switch-location-history)
+
+(defvar tn/payments-file      (concat tn/notes-directory "/Downloads/ListaMovimenti.xlsx"))
+(defvar tn/maps-script-file   (concat tn/notes-directory "/Projects/Qself/GPX.py"))
+
+(defun tn/maps-produce-all () (interactive)
+       (tn/maps-produce-...)
+       (tn/maps-produce-...))
+
+(defun tn/maps-produce-... () (interactive)
+       (let ((choices '("" "over" "multi" "gpx" "circ" "nsoc")))
+         (tn/async-shell (concat "python3 " tn/maps-script-file  " "
+                                 "-i=" tn/maps-directory-...-in  " "
+                                 "-o=" tn/maps-directory-...-out " "
+                                 "-p=" tn/payments-file          " "
+                                 "-c=" tn/calendar-file          " "
+                                 "--options="
+                                 (completing-read "Choose ..." choices)))))
+
+(defun tn/maps-produce-... () (interactive)
+       (let ((choices '("" "over" "multi" "gpx" "circ" "nsoc")))
+         (tn/async-shell (concat "python3 " tn/maps-script-file " "
+                                 "-i=" tn/maps-directory-...  " "
+                                 "-o=" tn/maps-directory-... " "
+                                 "-p=" tn/payments-file         " "
+                                 "-c=" tn/calendar-file         " "
+                                 "--options=" "\"includemarkers\""))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defvar tn/calendar-file           (concat tn/notes-directory ...))
+
+(defvar tn/maps-directory-...-in  (concat tn/link-HOME-dir ...))
+(defvar tn/maps-directory-...-out (concat tn/link-HOME-dir ...))
+
+(defvar tn/maps-current-agenda-view tn/maps-directory-...-out
+  "Stores the path to the html files that will be displayed in
+the split agenda view")
+
+(global-set-key (kbd "C-x x p") 'tn/open-maps)
+(defun tn/open-maps () (interactive)
+       (pcase (completing-read "Choose options" '("input" "output"))
+         ("input"  (find-file tn/maps-directory-...-in))
+         ("output" (find-file tn/maps-directory-...-out))))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/set-agenda-map ()
+  (interactive)
+  (tab-new)
+  (xwidget-webkit-browse-url "about:blank")
+  (delete-other-windows)
+  (org-agenda-list)
+  (split-window-right)
+  (windmove-right)
+  (switch-to-buffer (get-buffer "*xwidget webkit:  *"))
+  (windmove-left))
+(global-set-key (kbd "C-x A") 'tn/set-agenda-map)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/update-agenda-map ()
+  (when (and (= (th/current-days) 1) (get-buffer "*xwidget webkit:  *"))
+    (let* ((date org-agenda-current-date)
+           (caldate (concat
+                     (number-to-string (nth 2 date))
+                     (format "%02d" (car date))
+                     (format "%02d" (nth 1 date))))
+           (filename (concat tn/maps-current-agenda-view caldate ".html")))
+
+      (when (file-exists-p filename)
+        (tn/open-html-link filename)))))
+
+(add-hook 'org-agenda-finalize-hook  #'tn/update-agenda-map)
+#+end_src
+
+*** Clock export
+Exporting all logs to csv.
+
+- [2024-06-04 Tue 09:37 +0200] :: The org-clock-export.el file should do little
+#+begin_src emacs-lisp
+(load-file "~/.doom.d/org-clock-export.el")
+
+(setq org-clock-export-org-ql-query '(not (tags "noexport"))
+      org-clock-export-files '(...
+                               ...
+                               ...
+                               ...)
+      org-clock-export-export-file-name (concat org-directory "/clock-export.csv")
+      org-clock-export-buffer "*ORG-CLOCK-EXPORT CSV*"
+      org-clock-export-delimiter ","
+      org-clock-export-data-format '( "filename" (file-name-nondirectory (buffer-file-name))
+                                        ;"heading"  (org-entry-get (point) "ITEM") ;
+                                      "outline"  (tn/list-to-string (org-get-outline-path t t))
+                                      "date"     (concat start-year "-" start-month "-" start-day)
+                                      "tzone"    (tn/get-tzone)
+                                      "start"    (concat start-hour ":" start-minute)
+                                      "duration" (number-to-string (+ (* (string-to-number total-hours) 60)
+                                                                      (string-to-number total-minutes)))
+                                      "tags"     (or (org-entry-get (point) "ALLTAGS") "nil")
+                                      "note"     (tn/get-lognote)))
+(defun tn/get-lognote ()
+  "Get tags following '- ' on the line below the current point."
+  (save-excursion
+    (forward-line 1) ;; Move to the line below
+    (if (looking-at "- \\(.+\\)")
+        (s-replace "," "." (match-string 1)) ;; Return the text following '- '
+      "nil"))) ;; Return nil if not found
+
+(defvar tn/default-tzone "+0200")
+
+(defun tn/get-tzone ()
+  "Get timezone from the first time timestamp in the clock.
+    Supports timestamps without timezone"
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (forward-char 28)
+    (let ((start-pos (point)))
+      ;; jumps to the next closing square bracket character, to find and return the time zone
+      (if (search-forward "]" (line-end-position) t) ; Search for the character in the line
+          (progn
+            (backward-char)
+            (let* ((text (buffer-substring-no-properties start-pos (point)))
+                   (trim (s-trim text)))
+              (if (> (length trim) 0)
+                  trim
+                tn/default-tzone)))
+        ;; recognises miswritten timestamps
+        tn/default-tzone))))
+
+(defun tn/list-to-string (lst)
+  "Convert a list into a quoted string format.
+Each element in the list will be quoted and separated by spaces."
+  (mapconcat (lambda (x) (format "\"%s\"" x)) lst " "))
+#+end_src
+
+#+caption: Call interactively
+#+begin_src emacs-lisp
+(defun tn/agenda-clock-export-csv ()
+  (interactive)
+  (org-clock-export :output-file (concat ...))
+  (tn/async-shell ...))
+#+end_src
+
+*** Timezone Support
+Added superficial time zone support for times.
+
+# [2023-12-28 Thu 14:02 +0100]
+'org-timestamp-formats' is supposed to be a constant, breakages may appear.
+- [2024-01-06 Sat +0100] :: org agenda - clock duration range does not appear fully =(10:00-11:30)=
+- [2024-06-01 Sat +0200] :: timezone format was changed again, the code seems to still support it
+
+#+begin_src emacs-lisp :tangle no
+(setq! org-timestamp-formats '("<%Y-%m-%d %a %Z>" . "<%Y-%m-%d %a %H:%M %Z>"))
+#+end_src
+
+The only line that needs fixing is the regexp after FIXME here.
+: new "\\([0-9]\\{1,2\\}:[0-9]\\{2\\}\\).*?\\].*?\\([0-9]\\{1,2\\}:[0-9]\\{2\\}\\)"
+: old "\\([0-9]\\{1,2\\}:[0-9]\\{2\\}\\)\\].*?\\([0-9]\\{1,2\\}:[0-9]\\{2\\}\\)"
+
+#+caption: [2024-06-01 Sat +0200]
+#+begin_src emacs-lisp
+(setq! org-timestamp-formats '("<%Y-%m-%d %a %z>" . "<%Y-%m-%d %a %H:%M %z>"))
+(setq! org-time-stamp-formats '("%Y-%m-%d %a %z" . "%Y-%m-%d %a %H:%M %z"))
+#+end_src
+
+Had to override an existing method in the org-mode library.
+#+begin_src emacs-lisp
+(defun org-agenda-get-progress ()
+  "Return the logged TODO entries for agenda display."
+  (with-no-warnings (defvar date))
+  (let* ((props (list 'mouse-face 'highlight
+		      'org-not-done-regexp org-not-done-regexp
+		      'org-todo-regexp org-todo-regexp
+		      'org-complex-heading-regexp org-complex-heading-regexp
+		      'help-echo
+		      (format "mouse-2 or RET jump to org file %s"
+			      (abbreviate-file-name buffer-file-name))))
+	 (items (if (consp org-agenda-show-log-scoped)
+		    org-agenda-show-log-scoped
+		  (if (eq org-agenda-show-log-scoped 'clockcheck)
+		      '(clock)
+		    org-agenda-log-mode-items)))
+	 (parts
+	  (delq nil
+		(list
+		 (when (memq 'closed items) (concat "\\<" org-closed-string))
+		 (when (memq 'clock items) (concat "\\<" org-clock-string))
+		 (when (memq 'state items)
+		   (format "- +State \"%s\".*?" org-todo-regexp)))))
+	 (parts-re (if parts (mapconcat #'identity parts "\\|")
+		     (error "`org-agenda-log-mode-items' is empty")))
+	 (regexp (concat
+		  "\\(" parts-re "\\)"
+		  " *\\["
+		  (regexp-quote
+		   (substring
+		    (format-time-string
+		     (org-time-stamp-format)
+		     (org-encode-time  ; DATE bound by calendar
+		      0 0 0 (nth 1 date) (car date) (nth 2 date)))
+		    1 11))))
+	 (org-agenda-search-headline-for-time nil)
+	 marker hdmarker priority category level tags closedp type
+	 statep clockp state ee txt extra timestr rest clocked inherited-tags
+         effort effort-minutes)
+    (goto-char (point-min))
+    (while (re-search-forward regexp nil t)
+      (catch :skip
+	(org-agenda-skip)
+	(setq marker (org-agenda-new-marker (match-beginning 0))
+	      closedp (equal (match-string 1) org-closed-string)
+	      statep (equal (string-to-char (match-string 1)) ?-)
+	      clockp (not (or closedp statep))
+	      state (and statep (match-string 2))
+	      category (save-match-data (org-get-category (match-beginning 0)))
+	      timestr (buffer-substring (match-beginning 0) (line-end-position))
+              effort (save-match-data (or (get-text-property (point) 'effort)
+                                          (org-entry-get (point) org-effort-property))))
+        (setq effort-minutes (when effort (save-match-data (org-duration-to-minutes effort))))
+	(when (string-match "\\]" timestr)
+	  ;; substring should only run to end of time stamp
+	  (setq rest (substring timestr (match-end 0))
+		timestr (substring timestr 0 (match-end 0)))
+	  (if (and (not closedp) (not statep) ;; FIXME here
+		   (string-match "\\([0-9]\\{1,2\\}:[0-9]\\{2\\}\\).*?\\].*?\\([0-9]\\{1,2\\}:[0-9]\\{2\\}\\)"
+				 rest))
+	      (progn (setq timestr (concat (substring timestr 0 -1)
+					   "-" (match-string 1 rest) "]"))
+		     (setq clocked (match-string 2 rest)))
+	    (setq clocked "-")))
+	(save-excursion
+	  (setq extra
+		(cond
+		 ((not org-agenda-log-mode-add-notes) nil)
+		 (statep
+		  (and (looking-at ".*\\\\\n[ \t]*\\([^-\n \t].*?\\)[ \t]*$")
+		       (match-string 1)))
+		 (clockp
+		  (and (looking-at ".*\n[ \t]*-[ \t]+\\([^-\n \t].*?\\)[ \t]*$")
+		       (match-string 1)))))
+	  (if (not (re-search-backward org-outline-regexp-bol nil t))
+	      (throw :skip nil)
+	    (goto-char (match-beginning 0))
+	    (setq hdmarker (org-agenda-new-marker)
+		  inherited-tags
+		  (or (eq org-agenda-show-inherited-tags 'always)
+		      (and (listp org-agenda-show-inherited-tags)
+			   (memq 'todo org-agenda-show-inherited-tags))
+		      (and (eq org-agenda-show-inherited-tags t)
+			   (or (eq org-agenda-use-tag-inheritance t)
+			       (memq 'todo org-agenda-use-tag-inheritance))))
+		  tags (org-get-tags nil (not inherited-tags))
+		  level (make-string (org-reduced-level (org-outline-level)) ? ))
+	    (looking-at "\\*+[ \t]+\\([^\r\n]+\\)")
+	    (setq txt (match-string 1))
+	    (when extra
+	      (if (string-match "\\([ \t]+\\)\\(:[^ \n\t]*?:\\)[ \t]*$" txt)
+		  (setq txt (concat (substring txt 0 (match-beginning 1))
+				    " - " extra " " (match-string 2 txt)))
+		(setq txt (concat txt " - " extra))))
+	    (setq txt (org-agenda-format-item
+		       (cond
+			(closedp "Closed:    ")
+			(statep (concat "State:     (" state ")"))
+			(t (concat "Clocked:   (" clocked  ")")))
+                       (org-add-props txt nil
+                         'effort effort
+                         'effort-minutes effort-minutes)
+		       level category tags timestr)))
+	  (setq type (cond (closedp "closed")
+			   (statep "state")
+			   (t "clock")))
+	  (setq priority 100000)
+	  (org-add-props txt props
+	    'org-marker marker 'org-hd-marker hdmarker 'face 'org-agenda-done
+	    'urgency priority 'priority priority 'level level
+            'effort effort 'effort-minutes effort-minutes
+	    'type type 'date date
+	    'undone-face 'org-warning 'done-face 'org-agenda-done)
+	  (push txt ee))
+        (goto-char (line-end-position))))
+    (nreverse ee)))
+#+end_src
+
+Utility to update the time zones to the new format.
+#+begin_src emacs-lisp :tangle no
+(defun tn/replace-tzone-abbreviations ()
+  "If org timestamps are created using the tzone %Z, an abbreviation is written,
+   if a timezone is rectified C-c C-c, the current OS timezone will replace the one
+    of the timestamp. This means that replacement must be done via substitution"
+  (interactive)
+
+  ; example [2024-06-01 Sat 11:29 CEST]
+  (beginning-of-buffer)
+  (replace-string " CEST]" " +0200]")
+  (beginning-of-buffer)
+  (replace-string " CET]"  " +0100]")
+  (beginning-of-buffer)
+  (replace-string " -03]" " -0300]")
+
+  ; example <2024-06-01 Sat 11:29 CEST>
+  (beginning-of-buffer)
+  (replace-string " CEST>" " +0200>")
+  (beginning-of-buffer)
+  (replace-string " CET>"  " +0100>")
+  (beginning-of-buffer)
+  (replace-string " -03>" " -0300>")
+
+  ; example [2024-06-01 Sat CEST +1y]
+  (beginning-of-buffer)
+  (replace-string " CEST " " +0200 ")
+  (beginning-of-buffer)
+  (replace-string " CET "  " +0100 ")
+  (beginning-of-buffer)
+  (replace-string " -03 " " -0300 ")
+)
+#+end_src
+
+*** Export python script
+#+begin_src emacs-lisp
+(defvar tn/calendar-export-file (concat tn/notes-directory ...))
+(defvar tn/maps-export-file (concat tn/notes-directory ...))
+
+(defun tn/run-mscript ()
+  (tn/async-shell "source ..."))
+
+(advice-add 'org-save-all-org-buffers :after 'tn/run-mscript)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun tn/compose-ics-export-shell-string ()
+  (let* ((fil (mapconcat 'identity org-agenda-files ","))
+         (fil-arc (s-replace ".org" ".org_archive" fil))
+         (home "...")   ; path needs to be ~/ or absolute, without final "/"
+         (fil (s-replace "~" "" fil))
+         (fil-arc (s-replace "~" "" fil-arc))
+         (command (concat "python3 "
+                          (expand-file-name tn/calendar-export-file)
+                          " --homedir " "\"" home  "\""
+                          ;" -o "       "\"" "History/Cal/"
+                          " -o "       "\"" "/Calendar/\""
+                          " -c "       "\"" fil "\""
+                          " -a "       "\"" fil-arc "\""))
+         (days-before (read-string "Days before: " "4")))
+    (concat command " -cf=" days-before " -ct=" "20")))
+
+(defun tn/export-ics-file ()
+  (interactive)
+  (tn/async-shell (tn/compose-ics-export-shell-string)))
+
+(global-set-key (kbd "C-x C-x .") 'tn/export-ics-file)
+#+end_src
+
+*** Clock report
+Alternate between two views of the log summary table from inside the org-agenda.
+
+#+begin_src emacs-lisp
+(defvar tn/org-agenda-clockreport-parameter-list
+  '((:maxlevel 2 :link yes :fileskip0 yes :match ...
+     :filetitle t :tcolumns 1 :formula "$4 = '(tn/daily-hours-agenda $3)")
+
+    (:maxlevel 2 :link yes :fileskip0 yes :match ...
+     :filetitle t :tcolumns 1 :formula "$4 = '(tn/daily-hours-agenda $3)")
+    ))
+
+(defvar tn/org-agenda-clockreport-parameter-list-titles
+  ; list of titles for org-agenda-clock-report-header
+  '("Duties"
+    "Overall"))
+
+(defvar tn/org-agenda-clockreport-parameter-index 0)
+
+(defun tn/org-agenda-clockreport-parameter-update ()
+  (interactive)
+  ; handles loop over
+  (if (< (+ tn/org-agenda-clockreport-parameter-index 1) (length tn/org-agenda-clockreport-parameter-list))
+       (setq tn/org-agenda-clockreport-parameter-index (+ tn/org-agenda-clockreport-parameter-index 1))
+       (setq tn/org-agenda-clockreport-parameter-index 0))
+
+  ; sets the parameters to the nth choice in tn/org-agenda-clockreport-parameter-list
+  (setq org-agenda-clockreport-parameter-plist
+        (nth tn/org-agenda-clockreport-parameter-index tn/org-agenda-clockreport-parameter-list))
+
+  ; sets the title of the clockreport to the nth choice in tn/org-agenda-clockreport-parameter-list-titles
+  (setq org-agenda-clock-report-header
+        (concat "\n " (nth tn/org-agenda-clockreport-parameter-index tn/org-agenda-clockreport-parameter-list-titles)))
+  (when (not org-agenda-clockreport-mode)
+    (setq org-agenda-clockreport-mode 't))
+  (org-agenda-redo))
+
+(define-key org-agenda-mode-map (kbd "C-c C-r") 'tn/org-agenda-clockreport-parameter-update)
+#+end_src
+
+#+begin_src emacs-lisp
+(nth tn/org-agenda-clockreport-parameter-index tn/org-agenda-clockreport-parameter-list-titles)
+#+end_src
+** Org Latex Customisation
++ inline :: @@latex: any arbitrary LaTeX code@@
++ line :: #+LATEX: any arbitrary LaTeX code
++ section :: #+BEGIN_EXPORT latex [.\n..] #+END_EXPORT
+
+Special classes can be created, to be specified at the beginning of the file.
+
+#+caption: Lisp Latex Class Declaration
+#+begin_src elisp :tangle no
+(add-to-list 'org-latex-classes
+             '("per-file-class"
+               "\\documentclass{scrartcl}
+                 \\usepackage{graphicx}
+            [NO-DEFAULT-PACKAGES]
+            [NO-PACKAGES]"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+#+end_src
+
+#+caption: Org-file Latex Class implementation
+#+begin_example
+: #+latex_class: per-file-class
+#+end_example
+** File templates
+# [2024-01-10 Wed 09:06 +0100]
+
+Doom uses the [[file:~/.emacs.d/modules/editor/file-templates/templates/][file-template]] feature of =yasnippet=.
+You can easily edit it directly. The new template is pasted below in case, for the case in which changes are reverted,.
+
+#+caption: Remember to remove the backslash before the todo heading
+#+begin_example
+# -*- mode: snippet -*-
+# --
+#+title: `(string-join
+           (mapcar #'capitalize
+                   ;; Replace -,_... with space
+                   (split-string
+                    (let (case-fold-search)
+                      ;; Seperating lower from upper: hello|World
+                      (replace-regexp-in-string
+                       "\\([[:lower:]]\\)\\([[:upper:]]\\)" "\\1 \\2"
+                       ;; Separating upper from (upper and lower): HTTP|Server
+                       (replace-regexp-in-string "\\([[:upper:]]\\)\\([[:upper:]][0-9[:lower:]]\\)"
+                                                 "\\1 \\2" (file-name-base buffer-file-name))))
+                    "[^[:word:]0-9]+"
+                    )) " " )
+`
+#+author: Tebe Nigrelli
+#+created: `(format-time-string "[%Y-%m-%d %a]" nil nil)`
+
+$0
+
+\* TODO
+# `(format-time-string "[%Y-%m-%d %a %H:%M]" nil nil)`
+#+end_example
+
+Additional notes
+- [2024-02-05 Mon 09:41 +0100] :: remember that having the id entry as "" will use it as empty thus create problems because the snippets won't have a unique identifier.
+
+** Random Link
+# [2024-01-11 Thu 08:39 +0100]
+
+Link that jumps to one of many locations in it randomly. Useful for when you don't know what to do.
+
+#+begin_src emacs-lisp
+(defun tn/random-link-jump (string-list)
+  "Takes a list of sys links and opens one of them at random"
+  (interactive)
+  (let* ((link-list (split-string string-list ", " t nil))
+         (l (length link-list))
+         (r (random l))
+         (e (nth r link-list)))
+    (find-file (expand-file-name e))))
+
+(org-link-set-parameters "rnd" :follow #'tn/random-link-jump
+                         :face '(:foreground "#fc0373" :underline t :weight bold))
+#+end_src
+
+** RET opens link in tables
+Fix so that pressing 'enter' on a link in a table actually opens the link instead of skipping to the cell below
+
+| Something | Link |
+|-----------+------|
+| Google    | [[https:google.com][Link]] |
+|           |      |
+
+#+begin_src emacs-lisp
+;; If you press `RET` on a link inside a table it doesn't work as expected.
+(defun org-clicky ()
+  "Allow following any Org link, even inside tables."
+  (interactive)
+  (if (org-in-regexp org-link-any-re 1)
+      (org-open-at-point)
+    (org-return)))
+
+(define-key org-mode-map (kbd "RET") 'org-clicky)
+#+end_src
+
+** org-board
+Archiving of websites.
+
+#+caption: Sample Entry in a .org file
+#+begin_src org
+\** [2024-07-05 Fri 18:36 +0200] Disappointment - Danny Calegari
+:PROPERTIES:
+:URL:      https://www.ams.org/journals/notices/202309/noti2782/noti2782.html
+:ARCHIVED_AT: [[file:...][2024-07-05T18:37:11+0200]]
+:ID:       24d43aa7-49f4-4a08-9b53-1f46a09926a3
+:END:
+#+end_src
+
+#+begin_src emacs-lisp
+(define-key org-mode-map (kbd "C-c s-o") 'org-board-open)
+(define-key org-mode-map (kbd "C-c s-a") 'org-board-new)
+
+(defun tn/org-linkify-urls ()
+  "Create overlays for lines where 'URL' appears at the beginning."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^\\(:URL:\\)" nil t)
+      (let ((overlay (make-overlay (match-beginning 1) (match-end 1))))
+        (overlay-put overlay 'mouse-face 'highlight)
+        (overlay-put overlay 'help-echo "Click or press RET to execute org-board-archive")
+        (overlay-put overlay 'keymap
+                     (let* ((link `(call-interactively 'org-board-archive))
+                            (map (make-sparse-keymap)))
+                       (define-key map [mouse-1]
+                         `(lambda ()
+                            (interactive)
+                            (org-open-link-from-string ,link)))
+                       (define-key map (kbd "RET")
+                         `(lambda ()
+                            (interactive)
+                            (org-open-link-from-string ,link)))
+                       (define-key map (kbd "C-c C-o")
+                         `(lambda ()
+                            (interactive)
+                            (org-open-link-from-string ,link)))
+                       map))))))
+#+end_src
+
+** Green Knowledge Management
+# [2024-02-29 Thu 17:32 +0100]
+
+Experiment with an embedded graph diary within my Emacs.
+
+#+begin_src emacs-lisp
+(define-key org-mode-map (kbd "C-è g")  'org-id-get-create)
+(define-key org-mode-map (kbd "C-è c")  'org-id-copy)
+(define-key org-mode-map (kbd "C-è s")  'org-id-copy)
+
+(define-key org-mode-map (kbd "C-c è")  'org-mark-ring-push)
+(define-key org-mode-map (kbd "C-c ì")  'org-mark-ring-goto)
+
+(defun tn/org-id-jump-to-heading-at-point ()
+  "Jump to the Org heading with the Org ID at or around the cursor position."
+  (interactive)
+    (let* ((original-point (point))
+           (start-point (progn (skip-chars-backward "^ \t\n") (point)))
+           (end-point (progn (forward-char 36) (point)))
+           (selected-text (buffer-substring-no-properties start-point end-point)))
+      (org-mark-ring-push)
+      (org-id-goto (s-trim selected-text))))
+
+(define-key org-mode-map (kbd "C-è j")  'tn/org-id-jump-to-heading-at-point)
+
+; shortcuts to jump to the file
+(global-set-key                       (kbd "s-4")         #'(lambda () (interactive)
+                                                              (find-file ...)))
+(global-set-key                       (kbd "s-3")         #'(lambda () (interactive)
+                                                              (find-file ...)))
+
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(org-entry-get (point) "ID")
+(org-id-get (point) t)
+(with-temp-message (message (concat "\"" selected-text "\"")))
+#+end_src
+
+#+results:
+: e0a4fad9-e50d-4101-b303-893b3717dì3df
+
+** Mutable-path filelinks
+Original Source [[org:Learning/Reading/ReadingNotes.org::Path-Independent Links to Local Files Via Locate][here]].
+
+Sometimes you link to a file and then the file is moved, causing the link to break. The following script automatically searches for the new location of the file and offers to change the link, autofixing it. However, it only fixes the current link, not existing copies that are present in the file or elsewhere.
+
+- [2024-05-23 Thu 00:27 +0200] :: operates under the assumption of unique filenames (in the tn/search-dir-files directories)
+
+#+begin_src emacs-lisp
+(defvar tn/search-dir-files
+  ...
+  "Space delimited paths relative to HOME of where link files will be searched, as opposed to searching everything")
+
+(defun tn/experimental-link (querystring)
+  (interactive)
+  ;; get a list of hits
+  (let* (; extracts the specification ::details at the end of the link
+         (spec (if (string-match "\\(::.*\\)" querystring)
+                   (match-string 1 querystring)
+                    ""))
+         (querystring (if (string-match "\\(.*\\)::" querystring)
+                          (match-string 1 querystring)
+                        querystring))
+         (file-exists (file-exists-p querystring)))
+    (cond
+     (file-exists
+      (org-link-open-as-file querystring nil))
+     (t
+      (let* ((dir (file-name-directory querystring))
+             (fil (file-name-nondirectory querystring))
+                                        ; searches for the file if there is one
+                                        ; searches for the last directory if there is no file
+             (search (if (string-empty-p fil)
+                         (file-name-nondirectory (directory-file-name (file-name-directory dir)))
+                       fil))
+             (queryresults (split-string
+                            (s-trim
+                             (shell-command-to-string
+                              (concat
+                               "find "
+                               tn/search-dir-files " "
+                               "-name \"" search "\"")))
+                            "\n" t)))
+        (cond
+         ((= 0 (length queryresults))
+          ;; edge case: empty query result
+          (message "No results found for: \"%s\"" search))
+         ((= 1 (length queryresults))
+          ;; exactly one hit:
+          (let* ((file-choice (car queryresults))
+                 (directory (file-name-directory file-choice))
+                 (file-choice (concat (car queryresults) spec)))
+            (message "Match found at %s" directory)
+            (tn/org-link-replace-exp (tn/org-shorten-file-link file-choice))
+            (org-link-open-as-file file-choice nil)
+            (message "Link set to: %s" directory))
+          )
+         (t
+          ;; in any other case:
+          (message "Multiple results found for query, pick one: %s" querystring)
+          (let* ((nfile-choice (concat (completing-read (format "Move %s: " querystring) queryresults) spec))
+                 (ndirectory (file-name-directory nfile-choice))
+                 (file-choice (concat (car queryresults) spec)))
+            (tn/org-link-replace-exp (tn/org-shorten-file-link nfile-choice))
+            (org-link-open-as-file nfile-choice nil)
+            (message "Link URL changed to: %s" ndirectory)))))))))
+
+(defun tn/org-shorten-file-link (file)
+  "Create a file link using completion from the file argument."
+  (let* ((file (s-replace tn/link-HOME-dir "~" file))
+         (pwd (file-name-as-directory (expand-file-name ".")))
+	 (pwd1 (file-name-as-directory (abbreviate-file-name
+				        (expand-file-name ".")))))
+    (cond ((string-match
+	    (concat "^" (regexp-quote pwd1) "\\(.+\\)") file)
+	   (concat "fil:" (match-string 1 file)))
+	  ((string-match
+	    (concat "^" (regexp-quote pwd) "\\(.+\\)")
+	    (expand-file-name file))
+	   (concat "fil:"
+		   (match-string 1 (expand-file-name file))))
+	  (t (concat "fil:" file)))))
+
+(defun tn/org-link-complete-file (&optional arg)
+  "Create a file link using completion.
+With optional ARG \\='(16), abbreviate the file name in the link."
+  (tn/org-shorten-file-link (read-file-name "File: ")))
+
+(defun tn/org-link-replace-exp (arg)
+  "Replaces the url of the org link at the cursor with
+    the arg that was provided. Expects the link prefix as well"
+  (org-in-regexp org-link-bracket-re 1)
+  (setq remove (list (match-beginning 0) (match-end 0)))
+  (setq desc (when (match-end 2) (match-string-no-properties 2)))
+  (setq link (org-link-unescape arg))
+
+                                        ; removes the whole link
+  (when remove (apply #'delete-region remove))
+  (insert (org-link-make-string link desc))
+  ;; Redisplay so as the new link has proper invisible characters.
+  (sit-for 0))
+
+(org-link-set-parameters "fil"
+                        :complete 'tn/org-link-complete-file
+                        :follow (lambda (url) (tn/experimental-link url))
+                        :face '(:foreground "#ffbf00" :underline t :weight bold))
+#+end_src
+
+Example
+[[fil:config.org]]
+
+** Open default file link
+
+The user places inside subheadings a link to a file, allowing to jump to the file which a shortcut. Useful when all operations are recorded in one file, but changes involve multiple files: this is a quick way to jump back and forth.
+
+#+begin_export ascii
+\*** University Calendar Import :...:
+:PROPERTIES:
+:PATH:     [[fil:...]]
+:START:    [2022-12-25 Sun 17:00 +0100]
+:END:
+#+end_export
+
+#+begin_src emacs-lisp
+(defun local/org-get-global-properties ()
+    "Get all the global proprties in buffer"
+    (org-element-map (org-element-parse-buffer) 'keyword
+      (lambda (el) (and
+                    (string= (org-element-property :key el) "PROPERTY")
+                    (let* ((strings (split-string (org-element-property :value el)))
+                           (value (string-join (cdr strings) " "))
+                           (name (car strings)))
+                      (cons name value))))))
+
+(defun local/org-get-global-property (key)
+    "Get global property value"
+    (cdr (assoc key (local/org-get-global-properties))))
+
+(defun tn/jump-to-linked-path-property ()
+  (interactive)
+  (let ((prop-local (org-entry-get (point) "PATH" 't))
+        (prop-global (local/org-get-global-property "PATH")))
+       (when (or prop-local prop-global)
+       (if prop-local
+           (org-link-open-from-string prop-local)
+           (org-link-open-from-string prop-global)))))
+
+(define-key org-mode-map (kbd "C-c 0") 'tn/jump-to-linked-path-property)
+#+end_src
+
+* CSV mode
+#+begin_src emacs-lisp
+(load "~/.doom.d/rainbow-csv.el")
+(add-hook 'csv-mode-hook #'(lambda ()
+                             (toggle-truncate-lines 1)
+                             (csv-align-fields nil (point-min) (point-max))
+                             (csv-header-line)))
+#+end_src
+
+* Read Only
+Disables latex utilities when in read-only mode.
+
+#+begin_src emacs-lisp
+(defun tn/org-read-only-mode ()
+  (if (strbound-and-true-p org-appear-mode)
+          (progn
+            (org-fragtog-mode -1)
+            (org-appear-mode  -1))
+        (progn
+          (org-fragtog-mode 1)
+          (org-appear-mode  1))))
+
+(add-hook 'read-only-mode-hook #'tn/org-read-only-mode)
+#+end_src
+
+* ispell
+#+begin_src emacs-lisp
+(global-set-key (kbd "s-.") 'ispell-word)
+(global-set-key (kbd "s-,") 'flyspell-mode)
+(global-set-key (kbd "s-S") 'ispell-change-dictionary)
+#+end_src
+* Magit
+# [2024-06-17 Mon 11:19 +0200]
+
+Workaround because MAGIT needs seq-25.
+
+#+begin_src emacs-lisp
+(defun seq-keep (function sequence)
+  "Apply FUNCTION to SEQUENCE and return the list of all the non-nil results."
+  (delq nil (seq-map function sequence)))
+#+end_src
+
+* folding / hiding the region
+Code folding
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x è") '+fold/toggle)
+(global-set-key (kbd "C-x +") 'hide-region-unhide)
+(global-set-key (kbd "C-x -") 'hide-region-hide)
+#+end_src
+
+* Additional Packages
+
+#+begin_src emacs-lisp :tangle no
+(package! git-timemachine)    ; [2023-02-22 Wed 18:46] in time with git
+(package! ob-async)           ; async source block execution [2023-01-19 Thu] takes longer to complete, but does not block Emacs
+(package! org-mru-clock)      ; helpful clock back into last tasks support
+(package! literate-calc-mode) ; [2023-03-19 Sun]
+(package! olivetti)           ; shrinks the visualisation of the text vertically
+(package! format-all)         ; has autoformat support for so many different languages
+(package! move-dup)           ; moving multiple lines / duplicating
+(package! aggressive-indent)  ; more intuitive indentation
+(package! 0x0)                ; online pastebin
+(package! artist)             ; drawing in ascii
+(package! xkcd)               ; reading xkcd comincs
+(package! org-fragtog)        ; latex automatic rendering of sections
+(package! org-appear)         ; fragtog for org
+(package! org-ql)             ; [2023-01-19 Thu] :: org query language
+(package! org-web-tools)
+(package! org-board)          ; [2024-01-18 Thu CET]
+(package! org-timeblock)      ; [2024-01-21 Sun CET]
+(package! spray)              ; speed reading
+(package! snow)
+(package! vlf)                ; [2023-01-24 Tue] :: view large files
+(package! nov)                ; [2023-03-01 Wed] :: .epub reading support
+(package! csv-mode)
+(package! posframe)
+(package! all-the-icons)
+(package! hide-region)        ; [2023-06-01 Thu]
+(package! djvu)               ; [2023-12-26 Tue] required by org-capture
+(package! osx-dictionary)
+#+end_src
