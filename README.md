@@ -39,11 +39,11 @@ I also use Emacs as a way to index my files. For instance, I write timelines for
   <img src="assets/org-capture.png" alt="Org Capture Template Selection Menu">
   <p><em>The Org Capture template selection menu, displaying available templates for quick note capture</em></p>
 </div>
-As I have more interest than time to work on them, I maintain lists of 'ideas for the future' and other kinds of reminders: things to watch, read, develop or learn, The [org-capture]() feature allows users to define a format to insert data and a destination file; when calling the function, org-capture creates a small window, asks the user to insert the information, and disappears, saving the text automatically.
+As I have more interest than time to work on them, I maintain lists of 'ideas for the future' and other kinds of reminders: things to watch, read, develop or learn, The org-capture feature allows users to define a format to insert data and a destination file; when calling the function, org-capture creates a small window, asks the user to insert the information, and disappears, saving the text automatically.
 
 <div align="center">
   <img src="assets/org-capture%20demo.gif" alt="Org Capture Demo">
-  <p><em>Demo showcasing the Org Capture workflow in action</em></p>
+  <p><em>Demo showcasing the Org Capture workflow</em></p>
 </div>
 
 # Related projects
