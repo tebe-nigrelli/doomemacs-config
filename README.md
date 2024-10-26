@@ -42,9 +42,8 @@ I also use Emacs as a way to index my files. For instance, I write timelines for
 As I have more interest than time to work on them, I maintain lists of 'ideas for the future' and other kinds of reminders: things to watch, read, develop or learn, The [org-capture]() feature allows users to define a format to insert data and a destination file; when calling the function, org-capture creates a small window, asks the user to insert the information, and disappears, saving the text automatically.
 
 <div align="center">
-  <video src="assets/org-capture%20demo.mov" alt="Org Capture Demo">
-    <p><em>Demo showcasing the Org Capture workflow in action</em></p>
-  </video>
+  <img src="assets/org-capture%20demo.gif" alt="Org Capture Demo">
+  <p><em>Demo showcasing the Org Capture workflow in action</em></p>
 </div>
 
 # Related projects
