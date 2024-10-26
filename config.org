@@ -8,7 +8,7 @@ Literate Configuration file for Doom Emacs.
 
 * TODO
 # [2024-01-10 Wed 09:26 +0100]
-- [ ] [2024-10-25 Fri 14:52 +0200] :: sample reminder
+- [ ] [2024-10-25 Fri 14:52 +0200] :: ...
 
 * Utility Code
 - [2022-11-14 Mon +0100] :: run old java jars from shell
