@@ -35,16 +35,17 @@ I also use Emacs as a way to index my files. For instance, I write timelines for
 
 
 ### org-capture
-![](assets/org-capture.png)
-<figure>
-  <figcaption>Menu asking me to select which template to use</figcaption>
-</figure>
+<div align="center">
+  <img src="assets/org-capture.png" alt="Org Capture Template Selection Menu">
+  <p><em>The Org Capture template selection menu, displaying available templates for quick note capture</em></p>
+</div>
 As I have more interest than time to work on them, I maintain lists of 'ideas for the future' and other kinds of reminders: things to watch, read, develop or learn, The [org-capture]() feature allows users to define a format to insert data and a destination file; when calling the function, org-capture creates a small window, asks the user to insert the information, and disappears, saving the text automatically.
 
-![](assets/org-capture%20demo.mov)
-<figure>
-  <figcaption>Demo use of the org-capture menu<figcaption>
-</figure>
+<div align="center">
+  <video src="assets/org-capture%20demo.mov" alt="Org Capture Demo">
+    <p><em>Demo showcasing the Org Capture workflow in action</em></p>
+  </video>
+</div>
 
 # Related projects
 I am currently working on [Attimo](https://github.com/quercia-dev/Attimo), a golang productivity app that allows users to define tables and quickly add new rows to them. The app is currently under active development, though I intend it to eventually replace my Emacs configuration.
